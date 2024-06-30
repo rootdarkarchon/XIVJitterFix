@@ -1,7 +1,7 @@
-﻿using Dalamud.Interface.Windowing;
+using Dalamud.Interface.Windowing;
 using ImGuiNET;
 
-namespace SamplePlugin;
+namespace XIVJitterFix;
 
 public class MainWindow : Window
 {

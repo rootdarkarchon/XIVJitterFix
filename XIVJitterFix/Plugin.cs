@@ -4,7 +4,7 @@ using Dalamud.Game;
 using System.Runtime.InteropServices;
 using Dalamud.Interface.Windowing;
 
-namespace SamplePlugin;
+namespace XIVJitterFix;
 
 public sealed class Plugin : IDalamudPlugin
 {
