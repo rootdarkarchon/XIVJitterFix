@@ -2,6 +2,7 @@ using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using Dalamud.Game;
 using System.Runtime.InteropServices;
+using Dalamud.Interface.Windowing;
 
 namespace SamplePlugin;
 
@@ -9,19 +10,37 @@ public sealed class Plugin : IDalamudPlugin
 {
     private readonly nint hookAddr;
 
-    private readonly SigScanner sigScanner;
     private readonly IPluginLog logger;
     private readonly IFramework framework;
+    private readonly WindowSystem windowSystem;
+    private readonly IDalamudPluginInterface dalamudPluginInterface;
+    private readonly MainWindow mainWindow;
 
     public unsafe Plugin(IPluginLog logger, ISigScanner sigScanner,
-        IFramework framework)
+        IFramework framework, IDalamudPluginInterface dalamudPluginInterface)
     {
         this.logger = logger;
         this.framework = framework;
+        this.dalamudPluginInterface = dalamudPluginInterface;
+        windowSystem = new("XIVJitterFix");
+        mainWindow = new MainWindow();
+        windowSystem.AddWindow(mainWindow);
 
         hookAddr = sigScanner.GetStaticAddressFromSig("48 89 05 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8D 8F ?? ?? ?? ??");
 
         framework.Update += Framework_Update;
+        dalamudPluginInterface.UiBuilder.OpenConfigUi += UiBuilder_OpenConfigUi;
+        dalamudPluginInterface.UiBuilder.Draw += UiBuilder_Draw;
+    }
+
+    private void UiBuilder_Draw()
+    {
+        windowSystem.Draw();
+    }
+
+    private void UiBuilder_OpenConfigUi()
+    {
+        mainWindow.Toggle();
     }
 
     private unsafe void Framework_Update(IFramework framework)
@@ -45,6 +64,11 @@ public sealed class Plugin : IDalamudPlugin
 
     public void Dispose()
     {
+        windowSystem.RemoveAllWindows();
+
+        dalamudPluginInterface.UiBuilder.OpenConfigUi -= UiBuilder_OpenConfigUi;
+        dalamudPluginInterface.UiBuilder.Draw -= UiBuilder_Draw;
+
         framework.Update -= Framework_Update;
     }
 
