@@ -1,8 +1,6 @@
 # XIVJitterFix
 
-Simple example plugin for Dalamud.
-
-This is not designed to be the simplest possible example, but it is also not designed to cover everything you might want to do. For more detailed questions, come ask in [the Discord](https://discord.gg/holdshift).
+Fixes SquareEnix' botched anti aliasing implementation.
 
 ## Wtf is this
 
