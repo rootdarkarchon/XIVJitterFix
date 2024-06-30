@@ -39,7 +39,7 @@ public sealed class Plugin : IDalamudPlugin
         {
             config->NpcGposeJitter = 1;
             config->CutsceneJitter = 1;
-            logger.Info("Detected change NpcGpose {0} / Cutscene {1} -> NpcGpose {2} / Cutscene {3}", prevValue1, prevValue2, config->NpcGposeJitter, config->CutsceneJitter);
+            logger.Verbose("Detected change NpcGpose {0} / Cutscene {1} -> NpcGpose {2} / Cutscene {3}", prevValue1, prevValue2, config->NpcGposeJitter, config->CutsceneJitter);
         }
     }
 
