@@ -15,6 +15,7 @@ public sealed class Plugin : IDalamudPlugin
     private readonly WindowSystem windowSystem;
     private readonly IDalamudPluginInterface dalamudPluginInterface;
     private readonly MainWindow mainWindow;
+    private readonly Config pluginConfig;
 
     public unsafe Plugin(IPluginLog logger, ISigScanner sigScanner,
         IFramework framework, IDalamudPluginInterface dalamudPluginInterface)
@@ -23,7 +24,8 @@ public sealed class Plugin : IDalamudPlugin
         this.framework = framework;
         this.dalamudPluginInterface = dalamudPluginInterface;
         windowSystem = new("XIVJitterFix");
-        mainWindow = new MainWindow();
+        pluginConfig = dalamudPluginInterface.GetPluginConfig() as Config ?? new();
+        mainWindow = new MainWindow(pluginConfig, dalamudPluginInterface);
         windowSystem.AddWindow(mainWindow);
 
         hookAddr = sigScanner.GetStaticAddressFromSig("48 89 05 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8D 8F ?? ?? ?? ??");
@@ -60,6 +62,13 @@ public sealed class Plugin : IDalamudPlugin
             config->CutsceneJitter = 1;
             logger.Verbose("Detected change NpcGpose {0} / Cutscene {1} -> NpcGpose {2} / Cutscene {3}", prevValue1, prevValue2, config->NpcGposeJitter, config->CutsceneJitter);
         }
+
+        if (pluginConfig.JitterMultiplier != config->JitterMultiplier)
+        {
+            logger.Verbose("Detected change JitterMult current {0} -> desired {1}", config->JitterMultiplier, pluginConfig.JitterMultiplier);
+
+            config->JitterMultiplier = pluginConfig.JitterMultiplier;
+        }
     }
 
     public void Dispose()
@@ -77,5 +86,6 @@ public sealed class Plugin : IDalamudPlugin
     {
         [FieldOffset(0x19)] public byte NpcGposeJitter;
         [FieldOffset(0x1a)] public byte CutsceneJitter;
+        [FieldOffset(0x64)] public float JitterMultiplier;
     }
 }
