@@ -69,6 +69,13 @@ public sealed class Plugin : IDalamudPlugin
 
             config->JitterMultiplier = pluginConfig.JitterMultiplier;
         }
+
+        if (pluginConfig.DownscaleBuffers != config->DownscaleBuffers)
+        {
+            logger.Verbose("Detected change DownscaleBuffers current {0} -> desired {1}", config->DownscaleBuffers, pluginConfig.DownscaleBuffers);
+
+            config->DownscaleBuffers = pluginConfig.DownscaleBuffers;
+        }
     }
 
     public void Dispose()
@@ -86,6 +93,26 @@ public sealed class Plugin : IDalamudPlugin
     {
         [FieldOffset(0x19)] public byte NpcGposeJitter;
         [FieldOffset(0x1a)] public byte CutsceneJitter;
+
+        /// <summary>
+        /// 0 = nothing, 1 = fxaa, 2 = tscmaa+jitter, 3 = tscmaa
+        /// </summary>
+        [FieldOffset(0x2c)] public byte AntiAliasingMode; 
+
+        /// <summary>
+        /// 0 = off, 1 = on
+        /// </summary>
+        [FieldOffset(0x44)] public byte DynamicResolution; 
+
+        /// <summary>
+        /// seems like it affects dof/bloom shaders when running dlss or dynamic res
+        /// </summary>
+        [FieldOffset(0x45)] public byte DownscaleBuffers; 
+
+        /// <summary>
+        /// FSR = 1, DLSS = 2
+        /// </summary>
+        [FieldOffset(0x54)] public byte DlssFsrSwitch;
         [FieldOffset(0x64)] public float JitterMultiplier;
     }
 }
