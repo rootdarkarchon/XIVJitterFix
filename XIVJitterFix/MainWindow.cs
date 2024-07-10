@@ -81,7 +81,7 @@ public class MainWindow : Window
                     pluginConfig.DownscaleBuffers = (byte)(ignoreDownscaling ? 0 : 1);
                     configDirty = true;
                 }
-                WrapText("This appears to fix the bloom and depth of field buffers when running any downscaling. Turn this on if you use DLAA.");
+                WrapText("This appears to fix the bloom and depth of field buffers when running any downscaling. Turn this on if you use DLAA. Note: this will also force DLAA on always as no downscaling will be performed anymore.");
                 if (configDirty)
                 {
                     dalamudPluginInterface.SavePluginConfig(pluginConfig);
