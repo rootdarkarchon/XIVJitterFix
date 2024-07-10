@@ -64,18 +64,31 @@ public class MainWindow : Window
             WrapText("This multiplier steers how much jittering is done through the game. 0.6 is default. Play around and see what works best for you. " +
                 "Sane values are probably somewhere between 0.5 and 1.5. If you need more precise values use Ctrl+Click into the slider. " +
                 "Jitter is more noticeable with TSCMAA+jitter than DLAA.");
-            bool ignoreDownscaling = pluginConfig.DownscaleBuffers == 0;
-            if (ImGui.Checkbox("Ignore Downscaling", ref ignoreDownscaling))
+
+            bool setDownscaleBuffers = pluginConfig.SetDownscaleBuffers;
+            if (ImGui.Checkbox("Override Downscaling Settings", ref setDownscaleBuffers))
             {
-                pluginConfig.DownscaleBuffers = (byte)(ignoreDownscaling ? 0 : 1);
+                pluginConfig.SetDownscaleBuffers = setDownscaleBuffers;
                 configDirty = true;
             }
-            WrapText("This appears to fix the bloom and depth of field buffers when running any downscaling. Turn this on if you use DLAA.");
-            if (configDirty)
+            using (ImRaii.Disabled(!setDownscaleBuffers))
             {
-                dalamudPluginInterface.SavePluginConfig(pluginConfig);
+                using var _ = ImRaii.PushIndent(10f);
+
+                bool ignoreDownscaling = pluginConfig.DownscaleBuffers == 0;
+                if (ImGui.Checkbox("Ignore Downscaling", ref ignoreDownscaling))
+                {
+                    pluginConfig.DownscaleBuffers = (byte)(ignoreDownscaling ? 0 : 1);
+                    configDirty = true;
+                }
+                WrapText("This appears to fix the bloom and depth of field buffers when running any downscaling. Turn this on if you use DLAA.");
+                if (configDirty)
+                {
+                    dalamudPluginInterface.SavePluginConfig(pluginConfig);
+                }
             }
         }
+
         expertConfig.Dispose();
     }
 }

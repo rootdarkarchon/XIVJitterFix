@@ -25,6 +25,19 @@ public sealed class Plugin : IDalamudPlugin
         this.dalamudPluginInterface = dalamudPluginInterface;
         windowSystem = new("XIVJitterFix");
         pluginConfig = dalamudPluginInterface.GetPluginConfig() as Config ?? new();
+
+        if (pluginConfig.Version == 0)
+        {
+            logger.Info("Migrating XIVJitterFix Config 0->1");
+            if (pluginConfig.DownscaleBuffers == 0)
+            {
+                logger.Info("DownscaleBuffers was set to 0, setting SetDownscaleBuffers to true");
+                pluginConfig.SetDownscaleBuffers = true;
+            }
+            pluginConfig.Version = 1;
+            dalamudPluginInterface.SavePluginConfig(pluginConfig);
+        }
+
         mainWindow = new MainWindow(pluginConfig, dalamudPluginInterface);
         windowSystem.AddWindow(mainWindow);
 
@@ -70,7 +83,7 @@ public sealed class Plugin : IDalamudPlugin
             config->JitterMultiplier = pluginConfig.JitterMultiplier;
         }
 
-        if (pluginConfig.DownscaleBuffers != config->DownscaleBuffers)
+        if (pluginConfig.SetDownscaleBuffers && pluginConfig.DownscaleBuffers != config->DownscaleBuffers)
         {
             logger.Verbose("Detected change DownscaleBuffers current {0} -> desired {1}", config->DownscaleBuffers, pluginConfig.DownscaleBuffers);
 
@@ -97,17 +110,17 @@ public sealed class Plugin : IDalamudPlugin
         /// <summary>
         /// 0 = nothing, 1 = fxaa, 2 = tscmaa+jitter, 3 = tscmaa
         /// </summary>
-        [FieldOffset(0x2c)] public byte AntiAliasingMode; 
+        [FieldOffset(0x2c)] public byte AntiAliasingMode;
 
         /// <summary>
         /// 0 = off, 1 = on
         /// </summary>
-        [FieldOffset(0x44)] public byte DynamicResolution; 
+        [FieldOffset(0x44)] public byte DynamicResolution;
 
         /// <summary>
         /// seems like it affects dof/bloom shaders when running dlss or dynamic res
         /// </summary>
-        [FieldOffset(0x45)] public byte DownscaleBuffers; 
+        [FieldOffset(0x45)] public byte DownscaleBuffers;
 
         /// <summary>
         /// FSR = 1, DLSS = 2
