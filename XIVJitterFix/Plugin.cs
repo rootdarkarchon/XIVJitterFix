@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using Dalamud.Interface.Windowing;
 using Dalamud.Game.Command;
 using System;
+using System.Globalization;
 
 namespace XIVJitterFix;
 
@@ -45,7 +46,11 @@ public sealed class Plugin : IDalamudPlugin
         mainWindow = new MainWindow(pluginConfig, dalamudPluginInterface);
         windowSystem.AddWindow(mainWindow);
 
-        commandManager.AddHandler("/jitterfix", new CommandInfo(OnCommand) { HelpMessage = $"Open the XIVJitterFix config window.", ShowInHelp = true });
+        commandManager.AddHandler("/jitterfix", new CommandInfo(OnCommand) 
+        { 
+            HelpMessage = "Open the XIVJitterFix config window.\n" +
+            "/jitterfix jitter <value> → Sets jitter multiplier to a specific value.", ShowInHelp = true 
+        });
 
         hookAddr = sigScanner.GetStaticAddressFromSig("48 89 05 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8D 8F ?? ?? ?? ??");
 
@@ -62,6 +67,23 @@ public sealed class Plugin : IDalamudPlugin
         if (splitArgs.Length == 0)
         {
             mainWindow.Toggle();
+        }
+
+        if(splitArgs.Length == 2)
+        {
+            if (splitArgs[0] == "jitter")
+            {
+                float jittermulti;
+                if (float.TryParse(splitArgs[1].Replace(",", "."), CultureInfo.InvariantCulture.NumberFormat, out jittermulti))
+                {
+                    pluginConfig.JitterMultiplier = jittermulti;
+                    dalamudPluginInterface.SavePluginConfig(pluginConfig);
+                }
+                else
+                {
+                    logger.Warning("Provided value {0} is not a valid float number", splitArgs[1]);
+                }
+            }
         }
     }
 
