@@ -6,6 +6,7 @@ using Dalamud.Interface.Windowing;
 using Dalamud.Game.Command;
 using System;
 using System.Globalization;
+using Dalamud.Interface.ImGuiNotification;
 
 namespace XIVJitterFix;
 
@@ -20,14 +21,16 @@ public sealed class Plugin : IDalamudPlugin
     private readonly ICommandManager commandManager;
     private readonly MainWindow mainWindow;
     private readonly Config pluginConfig;
+    private readonly INotificationManager notificationManager;
 
     public unsafe Plugin(IPluginLog logger, ISigScanner sigScanner,
-        IFramework framework, IDalamudPluginInterface dalamudPluginInterface, ICommandManager commandManager)
+        IFramework framework, IDalamudPluginInterface dalamudPluginInterface, ICommandManager commandManager, INotificationManager notificationManager)
     {
         this.logger = logger;
         this.framework = framework;
         this.dalamudPluginInterface = dalamudPluginInterface;
         this.commandManager = commandManager;
+        this.notificationManager = notificationManager;
         windowSystem = new("XIVJitterFix");
         pluginConfig = dalamudPluginInterface.GetPluginConfig() as Config ?? new();
 
@@ -78,10 +81,12 @@ public sealed class Plugin : IDalamudPlugin
                 {
                     pluginConfig.JitterMultiplier = jittermulti;
                     dalamudPluginInterface.SavePluginConfig(pluginConfig);
+                    notificationManager.AddNotification(new Notification() { Content = $"Jitter set to {jittermulti}", Title = "Jitter value change", Type = NotificationType.Success });
                 }
                 else
                 {
                     logger.Warning("Provided value {0} is not a valid float number", splitArgs[1]);
+                    notificationManager.AddNotification(new Notification() { Content = "Failed to set jitter to provided value", Title = "Jitter value change", Type = NotificationType.Error });
                 }
             }
         }
